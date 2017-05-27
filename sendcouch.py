@@ -5,7 +5,7 @@ import couchdb
 import os
 import xml.etree.ElementTree as ET
 BATCH_SIZE = 10000
-SMALL_BATCH_SIZE = 1000
+SMALL_BATCH_SIZE = 5000
 
 def parseLink(link):
     return {
@@ -37,36 +37,23 @@ def sendObjects(OBJECTS):
         finally:
             lock.release()
 
-
 def sendAttributes(ATTRIB):
     newKey = ATTRIB.attrib['NAME']
     itemType = ATTRIB.attrib['ITEM-TYPE']
 
-    idDict = {}
-    for attrValue in ATTRIB:
-        itemID = itemType + "_" + attrValue.attrib['ITEM-ID']
-        idDict[itemID] = attrValue.find('COL-VALUE').text
-        if len(idDict) == SMALL_BATCH_SIZE:
-            lock.acquire()
-            try:
-                batchDocs = db.view('_all_docs', 
-                                keys=list(idDict.keys()),
-                                include_docs=True)
-                for doc in list(batchDocs.rows):
-                    doc[newKey] = idDict[doc['id']]
-                db.update(batchDocs.rows)
-            finally:
-                lock.release()
-
-    if idDict:
+    idDict = {itemType[0] + '_' + attr.attrib['ITEM-ID'] : 
+              attr.find('COL-VALUE').text
+              for attr in ATTRIB}
+    idList = list(idDict.keys())
+    for i in range(len(idList))[::SMALL_BATCH_SIZE]:
         lock.acquire()
         try:
             batchDocs = db.view('_all_docs', 
-                            keys=list(idDict.keys()),
-                            include_docs=True)
-            for doc in list(batchDocs.rows):
-                doc[newKey] = idDict[doc['id']]
-            db.update(batchDocs.rows)
+                                keys=idList[i:i+SMALL_BATCH_SIZE],
+                                include_docs=True)
+            for row in list(batchDocs.rows):
+                row['doc'][newKey] = idDict[row.id]
+            db.update([row['doc'] for row in batchDocs.rows])
         finally:
             lock.release()
 
@@ -91,7 +78,17 @@ def init(l, database):
     db = database
 
 if __name__ == '__main__':
-    filenames = os.listdir('splitXML')
+    if '-d' in sys.argv:
+        filenames = [f for f in os.listdir('splitXML') 
+                     if re.match(r'title7', f)]
+    elif '-o' in sys.argv:
+        filenames = [f for f in os.listdir('splitXML')
+                     if re.match(r'^[A-Z].*.xml$', f)]
+    elif '-a' in sys.argv:
+        filenames = [f for f in os.listdir('splitXML')
+                     if re.match(r'^[a-z].*.xml$', f)]
+    else:
+        filenames = os.listdir('splitXML')
     server = couchdb.Server()
     try:
         database = server.create('test')
