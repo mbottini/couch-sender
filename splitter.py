@@ -88,7 +88,7 @@ def createAttributeFiles(filename):
                     w.write(epilogue)
                     w.close()
                     fileNumber += 1
-                    w = open('splitXML/' + 'ATTRIBUTE' + str(fileNumber) + '.xml', 'w')
+                    w = open('splitXML/' + attrName + str(fileNumber) + '.xml', 'w')
                     w.write(newPrelude)
                     currentFile = ""
                     counter = 0
