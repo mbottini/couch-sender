@@ -40,7 +40,6 @@ def sendObjects(OBJECTS):
 def sendAttributes(ATTRIB):
     newKey = ATTRIB.attrib['NAME']
     itemType = ATTRIB.attrib['ITEM-TYPE']
-
     idDict = {itemType[0] + '_' + attr.attrib['ITEM-ID'] : 
               attr.find('COL-VALUE').text
               for attr in ATTRIB}
@@ -54,6 +53,9 @@ def sendAttributes(ATTRIB):
             for row in list(batchDocs.rows):
                 row['doc'][newKey] = idDict[row.id]
             db.update([row['doc'] for row in batchDocs.rows])
+            #docsList = [row['doc'] for row in batchDocs.rows]
+            #for doc in docsList:
+            #    doc[newKey] = idDict[doc['_id']]
         finally:
             lock.release()
 
@@ -87,8 +89,10 @@ if __name__ == '__main__':
     elif '-a' in sys.argv:
         filenames = [f for f in os.listdir('splitXML')
                      if re.match(r'^[a-z].*.xml$', f)]
+    elif '-l' in sys.argv:
+        filenames = ['link-type1.xml']
     else:
-        filenames = os.listdir('splitXML')
+        filenames = os.listdir('splitXML').sort()
     server = couchdb.Server()
     try:
         database = server.create('test')
