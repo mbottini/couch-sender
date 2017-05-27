@@ -2,30 +2,36 @@
 
 Tool for splitting up and importing DBLP data into CouchDB. Testing on Mac and Windows is welcome.
 
-## Config
+## Dependencies:
 
-* Install CouchDB. [Windows](http://docs.couchdb.org/en/2.0.0/install/windows.html)
+* Install CouchDB.
+  [Windows](http://docs.couchdb.org/en/2.0.0/install/windows.html)
 [Mac](http://docs.couchdb.org/en/2.0.0/install/mac.html)
 [Linux](http://docs.couchdb.org/en/2.0.0/install/unix.html)
 
-* Download this repository with `git clone https://github.com/mbottini/couch-sender.git`.
+* `wget` for the folks on Arch who don't know that they don't have a super-basic
+  Unix tool.
 
-* Download the DBLP data into that directory from http://kdl.cs.umass.edu/databases/dblp-data.xml.gz.
+* `gunzip` for unzipping the downloaded `.gz` file.
 
-* Unzip the DBLP data with `gunzip dblp-data.xml.gz`.
+* `python3`, of course.
 
-## Running
+## Running the Easy Way:
 
-* Run `splitter.py` to split the data into each category.
+* Download this repository with `git clone
+  https://github.com/mbottini/couch-sender.git`.
 
-* Run `sendcouch.py` on both `LINKS.xml` and `OBJECTS.xml`. Because these documents create the IDs,
-they have to be run first. For now, I do `ls | grep ^[A-Z]+.xml | python3 sendcouch.py`.
+* Run `sh populatedb.sh` and watch it go.
 
-* Run `sendcouch.py` on the remaining documents. I do the opposite of the above `ls` command,
-doing `ls | grep ^[a-z].*.xml | python3 sendcouch.py`.
+## Running Individual Components
 
-Total running time on my beefy desktop is about 2 hours. Multiprocessing and some less
-stupid decisions should bring it up some.
+* Run `splitter.py` to split the data into each category. The `.gz` file is
+  currently hardcoded.
+
+* Run `sendcouch.py` to send the chunks into couchdb
+
+Total running time on my beefy desktop is about 22 minutes. Your mileage
+may vary.
 
 
 
