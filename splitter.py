@@ -2,7 +2,6 @@ import os
 import re
 
 attrRE = re.compile(r'^.*NAME="(.*)".*$')
-
 BATCH_SIZE = 10000
 
 def createDocFiles(filename, docType):
@@ -24,13 +23,11 @@ def createDocFiles(filename, docType):
 
         #Now, we write BATCH_SIZE objects to each file.
 
-        print("At 0.")
         w = open('splitXML/' + docType + str(fileNumber) + '.xml', 'w')
         w.write(prelude)
         currentFile = ""
         while currentLine != '    </{0}>\n'.format(docType):
             if counter == BATCH_SIZE:
-                print("At", counter * fileNumber)
                 w.write(currentFile)
                 w.write(epilogue)
                 w.close()
@@ -83,7 +80,6 @@ def createAttributeFiles(filename):
                 currentLine = f.readline()
                 counter += 1
                 if counter == BATCH_SIZE:
-                    print("At", counter * fileNumber)
                     w.write(currentFile)
                     w.write(epilogue)
                     w.close()
@@ -97,7 +93,9 @@ def createAttributeFiles(filename):
             w.close()
             currentLine = f.readline()
 
-createDocFiles('dblp-data.xml', 'OBJECTS')
-createDocFiles('dblp-data.xml', 'LINKS')
-createAttributeFiles('dblp-data.xml')
+if __name__ == '__main__':
+    os.makedirs('splitXML', exist_ok=True)
+    createDocFiles('dblp-data.xml', 'OBJECTS')
+    createDocFiles('dblp-data.xml', 'LINKS')
+    createAttributeFiles('dblp-data.xml')
 
