@@ -9,6 +9,10 @@ Tool for splitting up and importing DBLP data into CouchDB. Testing on Mac and W
 [Mac](http://docs.couchdb.org/en/2.0.0/install/mac.html)
 [Linux](http://docs.couchdb.org/en/2.0.0/install/unix.html)
 
+* Install the Python `couchdb` API with `pip3 install couchdb`.
+
+* If you haven't installed `pip3`, now is the time to do so.
+
 * `wget` for the folks on Arch who don't know that they don't have a super-basic
   Unix tool.
 
@@ -30,8 +34,8 @@ Tool for splitting up and importing DBLP data into CouchDB. Testing on Mac and W
 
 * Run `sendcouch.py` to send the chunks into couchdb
 
-Total running time on my beefy desktop is about 22 minutes. Your mileage
-may vary.
+Total running time on my beefy desktop is about 13m45s. Your mileage
+may vary, especially on a crappier laptop.
 
 
 
