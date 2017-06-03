@@ -68,7 +68,11 @@ if __name__ == '__main__':
     try:
         server.create('test')
     except:
-        pass
+        try:
+            s = server['test']
+        except:
+            print("Unable to connect to couchdb. Try starting it?")
+            exit()
 
     if '-d' in sys.argv:
         filenames = [f for f in os.listdir('splitXML') 
