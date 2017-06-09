@@ -7,6 +7,8 @@ import xml.etree.ElementTree as ET
 BATCH_SIZE = 10000
 SMALL_BATCH_SIZE = 5000
 
+dbName = 'test'
+
 def parseLink(link):
     return {
                 '_id' : 'L_' + link.attrib['ID'],
@@ -47,7 +49,7 @@ def sendAttributes(ATTRIB, db):
 def parseFile(filename):
     s = couchdb.Server()
     try:
-        db = s['test']
+        db = s[dbName]
     except:
         print("Failure to connect! Aborting.")
     print("Parsing", filename)
@@ -66,10 +68,10 @@ def parseFile(filename):
 if __name__ == '__main__':
     server = couchdb.Server()
     try:
-        server.create('test')
+        server.create(dbName)
     except:
         try:
-            s = server['test']
+            s = server[dbName]
         except:
             print("Unable to connect to couchdb. Try starting it?")
             exit()
@@ -85,6 +87,13 @@ if __name__ == '__main__':
                      if re.match(r'^[a-z].*.xml$', f)]
     elif '-l' in sys.argv:
         filenames = ['link-type1.xml']
+    elif '--just-objects' in sys.argv:
+        filenames = [f for f in os.listdir('splitXML')
+                     if re.match(r'^OBJECTS.*.xml$', f)]
+    elif '--just-object-type' in sys.argv:
+        filenames = [f for f in os.listdir('splitXML')
+                     if re.match(r'^object-type.*.xml$', f)]
+    
     else:
         filenames = sorted(os.listdir('splitXML'))
 
