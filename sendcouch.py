@@ -93,26 +93,58 @@ if __name__ == '__main__':
     elif '--just-object-type' in sys.argv:
         filenames = [f for f in os.listdir('splitXML')
                      if re.match(r'^object-type.*.xml$', f)]
+    elif '--one-file' in sys.argv:
+        filenames = [sys.argv[-1]]
+
+    elif '--just-views' in sys.argv:
+        filenames = []
     
     else:
         filenames = sorted(os.listdir('splitXML'))
 
-    l = mp.Lock()
-    num_workers = mp.cpu_count()
-    pool = mp.Pool(processes=num_workers)
+    objectFiles = ['splitXML/' + f for f in filenames if re.match(r'[A-Z].*xml$', f)]
+    attrFiles = ['splitXML/' + f for f in filenames if re.match(r'[a-z].*xml$', f)]
 
-    objectFiles = ['splitXML/' + f for f in filenames if re.match(r'[A-Z].*.xml$', f)]
-    attrFiles = ['splitXML/' + f for f in filenames if re.match(r'[a-z].*.xml$', f)]
+    for f in objectFiles:
+        while True:
+            try:
+                parseFile(f)
+                break
+            except:
+                print("Failure when sending {0}. Retrying...".format(f))
 
-    pool.map(parseFile, objectFiles)
-    pool.map(parseFile, attrFiles)
 
-  #for i in range(len(objectFiles))[::2]:
-  #    p1 = Process(target=parseFile, args=(objectFiles[i],))
-  #    p1.start()
-  #    if i + 1 < len(objectFiles):
-  #        p2 = Process(target=parseFile, args=(objectFiles[i+1],))
-  #        p2.start()
-  #    p1.join()
-  #    if i + 1 < len(objectFiles):
-  #        p2.join()
+    for f in attrFiles:
+        while True:
+            try:
+                parseFile(f)
+                break
+            except:
+                print("Failure when sending {0}. Retrying...".format(f))
+
+    print("Creating views...")
+
+    views = {'views': 
+                {'count_objects': 
+                    {'reduce': '_count', 
+                     'map': "function (doc) {\n  if(doc['object-type'])" +
+                     "{\n    emit(doc._id, 1);\n  }\n}"
+                    }, 
+                 'count_all': 
+                     {'reduce': '_count', 
+                      'map': 'function (doc) {\n  emit(doc._id, 1);\n}'
+                     }, 
+                 'count_links': 
+                     {'reduce': '_count',
+                      'map': "function (doc) {\n  if(doc['link-type'])" +
+                      "{\n    emit(doc._id, 1);\n  }\n}"
+                     }, 
+                 'find_no_link_type': 
+                     {'map': "function (doc) {" +
+                      "\n  if(doc._id[0] == 'L' && !doc['link-type'])" +
+                      "{\n    emit(doc._id, doc);\n  }\n}"
+                     }
+                }, 
+             'language': 'javascript'
+            }
+    server[dbName]['_design/counter'] = views
